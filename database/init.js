@@ -20,8 +20,6 @@ function initialize() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
-
-  // Create leaves table
   db.exec(`
     CREATE TABLE IF NOT EXISTS leaves (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
