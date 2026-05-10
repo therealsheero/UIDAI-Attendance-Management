@@ -5,10 +5,6 @@ const { authenticate, requireRole } = require('../middleware/auth');
 const router = express.Router();
 router.use(authenticate, requireRole('hr'));
 
-/**
- * GET /api/hr/leaves to get all leave applications with optional status filter
- * Query params: ?status=pending|approved|rejected|cancelled
- */
 router.get('/leaves', (req, res) => {
   try {
     const { status } = req.query;
@@ -31,9 +27,6 @@ router.get('/leaves', (req, res) => {
   }
 });
 
-/**
- * GET /api/hr/leaves/date/:date to get all leaves that overlap with a specific date (approved and pending)
- */
 router.get('/leaves/date/:date', (req, res) => {
   try {
     const { date } = req.params;
@@ -54,10 +47,6 @@ router.get('/leaves/date/:date', (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
-
-/**
- * PATCH /api/hr/leaves/:id to approve or reject a leave application -> Body: { action: "approved" | "rejected" }
- */
 router.patch('/leaves/:id', (req, res) => {
   try {
     const { id } = req.params;
@@ -89,9 +78,6 @@ router.patch('/leaves/:id', (req, res) => {
   }
 });
 
-/**
- * GET /api/hr/stats to get leave statistics: count of people on leave per date (next 30 days)
- */
 router.get('/stats', (req, res) => {
   try {
     const stats = db.prepare(`
