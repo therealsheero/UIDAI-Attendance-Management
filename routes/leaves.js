@@ -5,9 +5,6 @@ const { authenticate } = require('../middleware/auth');
 const router = express.Router();
 router.use(authenticate);
 
-/**
- * POST /api/leaves to apply for a new leave
- */
 router.post('/', (req, res) => {
   try {
     const { leave_type, from_date, to_date, reason } = req.body;
@@ -40,9 +37,6 @@ router.post('/', (req, res) => {
   }
 });
 
-/**
- * GET /api/leaves/my to get all leaves for the logged-in employee
- */
 router.get('/my', (req, res) => {
   try {
     const { employee_id } = req.user;
@@ -58,9 +52,6 @@ router.get('/my', (req, res) => {
   }
 });
 
-/**
- * PATCH /api/leaves/:id/cancel to cancel/withdraw a pending leave from employees side
- */
 router.patch('/:id/cancel', (req, res) => {
   try {
     const { id } = req.params;
