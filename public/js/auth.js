@@ -22,7 +22,6 @@ function showToast(message, type = 'info') {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   if (token && user) {
-    // Already logged in — redirect
     if (user.role === 'hr') {
       window.location.href = '/hr.html';
     } else {
