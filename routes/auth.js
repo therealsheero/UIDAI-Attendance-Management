@@ -4,15 +4,9 @@ const jwt = require('jsonwebtoken');
 const { db } = require('../database/init');
 
 const router = express.Router();
-
-/**
- * POST /api/auth/register for employee self-registration
- */
 router.post('/register', (req, res) => {
   try {
     const { employee_id, name, password } = req.body;
-
-    // Validation
     if (!employee_id || !name || !password) {
       return res.status(400).json({ error: 'All fields are required: employee_id, name, password' });
     }
@@ -44,9 +38,6 @@ router.post('/register', (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/login for login for both employees and HR(admin)
- */
 router.post('/login', (req, res) => {
   try {
     const { employee_id, password } = req.body;
