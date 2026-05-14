@@ -125,15 +125,15 @@ Stores all leave applications and their current status.
 
 2. **Start the Server:**
 
-   # Development mode with nodemon
+   Development mode with nodemon
    `
    npm run dev
-`
-   # Production mode
-`
+   `
+   Production mode
+   `
    npm start
    `
 
-4. **Access the Application:**
+3. **Access the Application:**
    Open a web browser and navigate to \`http://localhost:3000\`.
    The database will automatically initialize and seed default HR accounts on the first run.
