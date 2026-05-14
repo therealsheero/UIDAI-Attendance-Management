@@ -119,19 +119,21 @@ Stores all leave applications and their current status.
 ## Running the Application
 
 1. **Install Dependencies:**
-   \`\`\`bash
+   `
    npm install
-   \`\`\`
+   `
 
 2. **Start the Server:**
-   \`\`\`bash
+
    # Development mode with nodemon
+   `
    npm run dev
-
+`
    # Production mode
+`
    npm start
-   \`\`\`
+   `
 
-3. **Access the Application:**
+4. **Access the Application:**
    Open a web browser and navigate to \`http://localhost:3000\`.
    The database will automatically initialize and seed default HR accounts on the first run.
