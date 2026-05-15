@@ -142,4 +142,10 @@ Stores all leave applications and their current status.
 
    ## Demo Images
    <img width="1902" height="899" alt="Home" src="https://github.com/user-attachments/assets/ab0a622d-104a-4940-ab08-44456d8868ba" />
+   <img width="1909" height="907" alt="emp" src="https://github.com/user-attachments/assets/e2d8e6dc-7ab9-4168-b895-1f41848c36e5" />
+   <img width="1911" height="909" alt="emp_leave" src="https://github.com/user-attachments/assets/31f5a9bf-fbc2-4e56-a863-0ff121e26906" />
+   <img width="1916" height="913" alt="dir" src="https://github.com/user-attachments/assets/4b911294-f431-4651-a80d-67d3cf9e9be3" />
+   <img width="1914" height="900" alt="dir_leave" src="https://github.com/user-attachments/assets/17e95d82-3040-493d-acaa-7faede6d3f1f" />
+
+
 
