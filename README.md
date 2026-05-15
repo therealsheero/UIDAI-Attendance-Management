@@ -137,3 +137,9 @@ Stores all leave applications and their current status.
 3. **Access the Application:**
    Open a web browser and navigate to \`http://localhost:3000\`.
    The database will automatically initialize and seed default HR accounts on the first run.
+
+   ---
+
+   ## Demo Images
+   <img width="1902" height="899" alt="Home" src="https://github.com/user-attachments/assets/ab0a622d-104a-4940-ab08-44456d8868ba" />
+
