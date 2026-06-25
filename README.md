@@ -125,10 +125,10 @@ Stores all leave applications and their current status.
 
 2. **Start the Server:**
    \`\`\`bash
-   # Development mode with nodemon
+   Development mode with nodemon
    npm run dev
 
-   # Production mode
+   Production mode
    npm start
    \`\`\`
 
