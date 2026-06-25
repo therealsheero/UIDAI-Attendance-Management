@@ -1,9 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-/**
- * Middleware to authenticate JWT tokens from Authorization header.
- * Attaches decoded user info to req.user on success.
- */
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
 

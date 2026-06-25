@@ -6,3 +6,5 @@
 node_modules/
 *.txt
 *.log
+ddg.js
+ddg.html

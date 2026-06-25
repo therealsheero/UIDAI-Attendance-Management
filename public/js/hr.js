@@ -1,14 +1,8 @@
-  /* ══════════════════════════════════════════════════════════
-    HR Dashboard JS — Leave Management & Stats
-    ══════════════════════════════════════════════════════════ */
-
   const API_BASE = '';
   let allLeaves = [];
   let currentFilter = 'pending';
   let actionLeaveId = null;
   let actionType = null;
-
-  // ─── Auth Check ──
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const officer = user.officer?.toLowerCase();
@@ -25,7 +19,6 @@
 
   document.getElementById('userName').textContent = user.name;
 
-  // ─── Toast ───────────────────────────────────────────────
   function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -39,7 +32,6 @@
     }, 3500);
   }
 
-  // ─── Utility ─────────────────────────────────────────────
   function formatDate(dateStr) {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
@@ -70,19 +62,15 @@
     };
   }
 
-  // ─── Set today's date ───────────────────────────────────
   const today = new Date().toISOString().split('T')[0];
-  // document.getElementById('viewDate').value = today;
   document.getElementById('fromDate').value = today;
 document.getElementById('toDate').value = today;
   document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-IN', {
     day: '2-digit', month: 'short'
   });
 
-  // Set default month for CSV export
   document.getElementById('csvMonth').value = today.substring(0, 7);
 
-  // ─── Fetch Dashboard Stats ──────────────────────────────
   async function fetchStats() {
     try {
       const res = await fetch(`${API_BASE}/api/hr/stats`, {
@@ -103,8 +91,6 @@ document.getElementById('toDate').value = today;
       showToast('Failed to load stats.', 'error');
     }
   }
-
-  // ─── Fetch Leaves by Date ───────────────────────────────
 
 async function fetchLeavesByRange(from, to) {
   try {
@@ -152,66 +138,6 @@ async function fetchLeavesByRange(from, to) {
   );
 }
 }
-
-  // async function fetchLeavesByDate(date) {
-  //   try {
-  //     const res = await fetch(`${API_BASE}/api/hr/leaves/date/${date}`, {
-  //       headers: authHeaders(),
-  //     });
-
-  //     const data = await res.json();
-  //     const leaves = data.leaves || [];
-
-  //     document.getElementById('selectedDateCount').textContent = data.count;
-
-  //     const tbody = document.getElementById('dateLeavesBody');
-
-  //     if (leaves.length === 0) {
-  //       tbody.innerHTML = `
-  //         <tr>
-  //           <td colspan="8">
-  //             <div class="empty-state">
-  //               <div class="empty-icon">🎉</div>
-  //               <h4>No one on leave</h4>
-  //               <p>No leave applications for ${formatDate(date)}</p>
-  //             </div>
-  //           </td>
-  //         </tr>
-  //       `;
-  //       return;
-  //     }
-
-  //     tbody.innerHTML = leaves.map((l, i) => `
-  //       <tr class="
-  //   ${l.leave_type === 'Tour' ? 'tour-row' : ''}
-  //   ${l.current_stage === 'dd' ? 'stage-dd' : ''}
-  //   ${l.current_stage === 'ddg' ? 'stage-ddg' : ''}
-  // ">
-  //         <td>${i + 1}</td>
-  //         <td>${l.employee_id}</td>
-  //         <td>${l.employee_name}</td>
-  //         <td><span class="leave-type-tag ${l.leave_type === 'Tour' ? 'tour-tag' : ''}">
-  //   ${l.leave_type}
-  // </span></td>
-  //         <td><span class="date-display">${formatDateTime(l.applied_on)}</span></td>
-  //         <td>
-  //         ${formatDate(l.from_date)}
-  //         <br>
-  //         <span class="date-display">→ ${formatDate(l.to_date)}</span>
-  //       </td>
-  //         <td>${getStatusBadge(l.status)}</td>
-  //         <td title="${l.reason}">${l.reason.length > 25 ? l.reason.substring(0, 25) + '…' : l.reason}</td>
-  //         <td>${l.district || '—'}</td>
-  //         <td>${l.forwarding_officer || '—'}</td>
-  // <td>${l.reporting_officer || '—'}</td>
-  //       </tr>
-  //     `).join('');
-  //   } catch (err) {
-  //     showToast('Failed to load date leaves.', 'error');
-  //   }
-  // }
-
-
   function renderRangeTable(leaves) {
   const tbody = document.getElementById('dateLeavesBody');
 
@@ -274,21 +200,10 @@ async function fetchLeavesByRange(from, to) {
       showToast('Failed to load leave requests.', 'error');
     }
   }
-
-  // ─── Render All Leaves Table ────────────────────────────
   function renderAllLeaves() {
     const tbody = document.getElementById('allLeavesBody');
-    //   let filtered = allLeaves;
-
-    // if (currentFilter === 'tour') {
-    //   filtered = allLeaves.filter(l => l.leave_type === 'Tour');
-    // } 
-    // else if (currentFilter !== 'all') {
-    //   filtered = allLeaves.filter(l => l.status === currentFilter);
-    // }
     let filtered = allLeaves;
 
-    // 🔥 ROLE BASED FILTER FIRST
     if (officer === 'dir') {
       filtered = filtered.filter(l => l.leave_type !== 'Tour');
     }
@@ -303,7 +218,6 @@ async function fetchLeavesByRange(from, to) {
       );
     }
 
-    // 🔥 THEN APPLY TABS
     if (currentFilter === 'tour') {
       filtered = filtered.filter(l => l.leave_type === 'Tour');
     }
@@ -363,17 +277,14 @@ async function fetchLeavesByRange(from, to) {
 </td>
   <td>
   ${
-      // 🔵 TOUR LOGIC
       l.leave_type === 'Tour'
         ? (
-          // DD → Forward
           officer === 'dd' && l.current_stage === 'dd'
             ? `<div class="action-btns">
               <button class="btn btn-warning btn-sm" onclick="forwardToDDG(${l.id})">➡️ Forward</button>
               <button class="btn btn-danger btn-sm" onclick="openActionModal(${l.id}, 'rejected')">❌ Reject</button>
               </div>`
 
-            // DDG → Approve/Reject
             : officer === 'ddg' && l.current_stage === 'ddg' && l.status === 'pending'
               ? `<div class="action-btns">
                 <button class="btn btn-success btn-sm" onclick="openActionModal(${l.id}, 'approved')">✅ Approve</button>
@@ -382,8 +293,6 @@ async function fetchLeavesByRange(from, to) {
 
               : '<span class="text-muted">—</span>'
         )
-
-        // 🟢 NORMAL LEAVE
         : (
           officer === 'dir' && l.status === 'pending'
             ? `<div class="action-btns">
@@ -397,8 +306,6 @@ async function fetchLeavesByRange(from, to) {
       </tr>
     `).join('');
   }
-
-  // ─── Filter Tabs ────────────────────────────────────────
   document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -408,11 +315,6 @@ async function fetchLeavesByRange(from, to) {
     });
   });
 
-  // ─── Date View Buttons ──────────────────────────────────
-  // document.getElementById('viewDateBtn').addEventListener('click', () => {
-  //   const date = document.getElementById('viewDate').value;
-  //   if (date) fetchLeavesByDate(date);
-  // });
   document
   .getElementById('viewRangeBtn')
   .addEventListener('click', () => {
@@ -435,20 +337,11 @@ async function fetchLeavesByRange(from, to) {
   });
 
   document.getElementById('todayBtn').addEventListener('click', () => {
-    // document.getElementById('viewDate').value = today;
     document.getElementById('fromDate').value = today;
 document.getElementById('toDate').value = today;
 
 fetchLeavesByRange(today, today);
-    // fetchLeavesByDate(today);
   });
-
-  // Also trigger on date input change
-  // document.getElementById('viewDate').addEventListener('change', function () {
-  //   if (this.value) fetchLeavesByDate(this.value);
-  // });
-
-  // ─── Action Modal ───────────────────────────────────────
   function openActionModal(leaveId, action) {
     actionLeaveId = leaveId;
     actionType = action;
@@ -518,7 +411,6 @@ fetchLeavesByRange(today, today);
     }
   });
 
-  // Close modal on overlay click
   document.getElementById('actionModal').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) {
       document.getElementById('actionModal').classList.add('hidden');
@@ -544,18 +436,13 @@ fetchLeavesByRange(today, today);
       showToast(err.message || 'Forward failed', 'error');
     }
   }
-  // ─── Logout ─────────────────────────────────────────────
   document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.clear();
     window.location.href = '/index.html';
   });
-
-  // ─── Init ───────────────────────────────────────────────
 fetchStats();
 fetchAllLeaves();
 fetchLeavesByRange(today, today);
-
-  // ─── CSV Utilities ──────────────────────────────────────
 
 
 async function showTodayLeaves() {
@@ -731,7 +618,6 @@ document.getElementById('downloadRangeCsvBtn')
     return [headers.join(','), ...rows].join('\n');
   }
 
-  // ─── Month-wise CSV Download ────────────────────────────
   document.getElementById('downloadMonthCsvBtn').addEventListener('click', async () => {
     const monthVal = document.getElementById('csvMonth').value;
     if (!monthVal) {
@@ -744,14 +630,11 @@ document.getElementById('downloadRangeCsvBtn')
     btn.innerHTML = '<span class="loader"></span> Exporting...';
 
     try {
-      // Fetch all leaves and filter for the selected month client-side
       const res = await fetch(`${API_BASE}/api/hr/leaves`, {
         headers: authHeaders(),
       });
       const data = await res.json();
       const leaves = data.leaves || [];
-
-      // Filter: leaves whose date range overlaps with the selected month
       const monthStart = monthVal + '-01';
       const [y, m] = monthVal.split('-').map(Number);
       const lastDay = new Date(y, m, 0).getDate();
@@ -779,7 +662,6 @@ document.getElementById('downloadRangeCsvBtn')
     }
   });
 
-  // ─── All Leaves CSV Download ────────────────────────────
   document.getElementById('downloadAllCsvBtn').addEventListener('click', () => {
     let dataToExport = allLeaves;
 

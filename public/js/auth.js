@@ -1,10 +1,5 @@
-/* ══════════════════════════════════════════════════════════
-   Auth JS — Login & Registration Logic
-   ══════════════════════════════════════════════════════════ */
-
 const API_BASE = '';
 
-// ─── Toast Notifications ──────────────────────────────────
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
@@ -21,27 +16,6 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
-// ─── Check if already logged in ──────────────────────────
-// (function checkAuth() {
-//   const token = localStorage.getItem('token');
-//   const user = JSON.parse(localStorage.getItem('user') || 'null');
-
-//   if (token && user) {
-//     // Already logged in — redirect
-//     if (data.user.role === 'hr') {
-
-//   if (['DD', 'DIR'].includes(data.user.officer)) {
-//     window.location.href = '/hr.html';
-//   } 
-//   else if (data.user.officer === 'DDG') {
-//     window.location.href = '/ddg.html';
-//   }
-
-// }else {
-//       window.location.href = '/employee.html';
-//     }
-//   }
-// })();
 
 (function checkAuth() {
   const token = localStorage.getItem('token');
@@ -51,15 +25,8 @@ function showToast(message, type = 'info') {
 
     if (user.role === 'hr') {
 
-      // DB has "Dir", "Dd", "Ddg"
       const officer = user.officer?.toLowerCase();
 
-      // if (['dd', 'dir'].includes(officer)) {
-      //   window.location.href = '/hr.html';
-      // } 
-      // else if (officer === 'ddg') {
-      //   window.location.href = '/ddg.html';R
-      // }
       if (user.role === 'hr') {
         window.location.href = '/hr.html';
 
@@ -69,7 +36,6 @@ function showToast(message, type = 'info') {
   }
 })();
 
-// ─── Login Form ──────────────────────────────────────────
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
@@ -99,32 +65,17 @@ if (loginForm) {
       if (!res.ok) {
         throw new Error(data.error || 'Login failed.');
       }
-
-      // Store token and user info
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
       showToast('Login successful! Redirecting...', 'success');
 
-      // setTimeout(() => {
-      //   if (data.user.role === 'hr') {
-      //     window.location.href = '/hr.html';
-      //   } else {
-      //     window.location.href = '/employee.html';
-      //   }
-      // }, 800);
       setTimeout(() => {
 
   if (data.user.role === 'hr') {
 
     const officer = data.user.officer?.toLowerCase();
 
-    // if (['dd', 'dir'].includes(officer)) {
-    //   window.location.href = '/hr.html';
-    // } 
-    // else if (officer === 'ddg') {
-    //   window.location.href = '/ddg.html';
-    // } 
     if (data.user.role === 'hr') {
   window.location.href = '/hr.html';
 }
@@ -144,8 +95,6 @@ if (loginForm) {
     }
   });
 }
-
-// ─── Registration Form ──────────────────────────────────
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
   registerForm.addEventListener('submit', async (e) => {

@@ -3,20 +3,11 @@ const { db } = require('../database/init');
 const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
-
-// All leave routes require authentication
 router.use(authenticate);
-
-/**
- * POST /api/leaves
- * Apply for a new leave
- */
 router.post('/', (req, res) => {
   try {
     const { leave_type, from_date, to_date, reason, district, reporting_officer,forwarding_officer } = req.body;
     const { employee_id, name } = req.user;
-
-    // Validation
     if (!leave_type || !from_date || !to_date || !reason) {
       return res.status(400).json({ error: 'All fields are required: leave_type, from_date, to_date, reason' });
     }
@@ -25,8 +16,6 @@ router.post('/', (req, res) => {
     if (!validTypes.includes(leave_type)) {
       return res.status(400).json({ error: `Invalid leave type. Must be one of: ${validTypes.join(', ')}` });
     }
-
-    // Tour requires district
     if (leave_type === 'Tour' && !district) {
       return res.status(400).json({ error: 'District is required for Tour applications.' });
     }
@@ -35,11 +24,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: '"From date" cannot be after "To date".' });
     }
 
-    // const result = db.prepare(`
-    //   INSERT INTO leaves (employee_id, employee_name, leave_type, from_date, to_date, reason, district, reporting_officer, forwarding_officer,current_stage,status, applied_on)
-    //   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-    // `).run(employee_id, name, leave_type, from_date, to_date, reason.trim(), (district || '').trim(), (reporting_officer || '').trim(), (forwardingOfficer || '').trim());
-    const result = db.prepare(`
+const result = db.prepare(`
   INSERT INTO leaves (
     employee_id,
     employee_name,
@@ -64,9 +49,9 @@ router.post('/', (req, res) => {
   reason.trim(),
   (district || '').trim(),
   (reporting_officer || '').trim(),
-  (forwarding_officer || '').trim(),   // ✅ FIXED
-  leave_type === 'Tour' ? 'dd' : 'dir',                          // ✅ ADD THIS
-  'pending'                            // ✅ ADD THIS
+  (forwarding_officer || '').trim(),  
+  leave_type === 'Tour' ? 'dd' : 'dir',                       
+  'pending'                        
 );
 
     const typeLabel = leave_type === 'Tour' ? 'Tour' : 'Leave';
@@ -79,11 +64,6 @@ router.post('/', (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
-
-/**
- * GET /api/leaves/my
- * Get all leaves for the logged-in employee
- */
 router.get('/my', (req, res) => {
   try {
     const { employee_id } = req.user;
@@ -98,17 +78,11 @@ router.get('/my', (req, res) => {
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
-
-/**
- * PATCH /api/leaves/:id/cancel
- * Cancel/withdraw a pending leave (employee only)
- */
 router.patch('/:id/cancel', (req, res) => {
   try {
     const { id } = req.params;
     const { employee_id } = req.user;
 
-    // Find the leave
     const leave = db.prepare('SELECT * FROM leaves WHERE id = ? AND employee_id = ?').get(id, employee_id);
 
     if (!leave) {

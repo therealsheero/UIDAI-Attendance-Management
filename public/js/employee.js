@@ -1,27 +1,18 @@
-/* ══════════════════════════════════════════════════════════
-   Employee Portal JS — Leave & Tour Management
-   ══════════════════════════════════════════════════════════ */
-
 const API_BASE = '';
 let allLeaves = [];
 let currentFilter = 'all';
 let cancelLeaveId = null;
-let currentTab = 'leave'; // 'leave' or 'tour'
+let currentTab = 'leave';
 
-// ─── Auth Check ──────────────────────────────────────────
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || 'null');
-// const forwardingOfficer = document.getElementById('forwardingOfficer').value.trim();
 if (!token || !user || user.role !== 'employee') {
   window.location.href = '/index.html';
 }
 
-// ─── Populate user info ─────────────────────────────────
 document.getElementById('userName').textContent = user.name;
 document.getElementById('empIdDisplay').value = user.employee_id;
 document.getElementById('empNameDisplay').value = user.name;
-
-// ─── Toast ───────────────────────────────────────────────
 function showToast(message, type = 'info') {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
@@ -35,7 +26,6 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
-// ─── Utility ─────────────────────────────────────────────
 function formatDate(dateStr) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
@@ -66,14 +56,11 @@ function authHeaders() {
   };
 }
 
-// ─── Set default date to today ──────────────────────────
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('fromDate').value = today;
 document.getElementById('toDate').value = today;
 document.getElementById('fromDate').min = today;
 document.getElementById('toDate').min = today;
-
-// Sync toDate when fromDate changes
 document.getElementById('fromDate').addEventListener('change', function () {
   const toDate = document.getElementById('toDate');
   if (toDate.value < this.value) {
@@ -81,8 +68,6 @@ document.getElementById('fromDate').addEventListener('change', function () {
   }
   toDate.min = this.value;
 });
-
-// ─── Tab Switching ──────────────────────────────────────
 document.querySelectorAll('.app-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
@@ -92,35 +77,6 @@ document.querySelectorAll('.app-tab').forEach(tab => {
   });
 });
 
-// function updateFormForTab() {
-//   const leaveTypeGroup = document.getElementById('leaveTypeGroup');
-//   const tourTypeGroup = document.getElementById('tourTypeGroup');
-//   const appTypeInput = document.getElementById('appType');
-//   const submitBtn = document.getElementById('submitBtn');
-//   const districtEl = document.getElementById('district');
-//   const districtOptional = document.getElementById('districtOptional');
-//   const reasonEl = document.getElementById('reason');
-
-//   if (currentTab === 'tour') {
-//     leaveTypeGroup.classList.add('hidden');
-//     tourTypeGroup.classList.remove('hidden');
-//     appTypeInput.value = 'tour';
-//     submitBtn.textContent = 'Submit Tour Application';
-//     districtEl.required = true;
-//     districtOptional.textContent = '(required)';
-//     districtOptional.style.color = 'var(--danger)';
-//     reasonEl.placeholder = 'The reason and district you are touring for';
-//   } else {
-//     leaveTypeGroup.classList.remove('hidden');
-//     tourTypeGroup.classList.add('hidden');
-//     appTypeInput.value = 'leave';
-//     submitBtn.textContent = 'Submit Leave Application';
-//     districtEl.required = false;
-//     districtOptional.textContent = '(optional)';
-//     districtOptional.style.color = '';
-//     reasonEl.placeholder = 'Describe your reason for leave...';
-//   }
-// }
 
 function updateFormForTab() {
   const leaveTypeGroup = document.getElementById('leaveTypeGroup');
@@ -147,10 +103,8 @@ function updateFormForTab() {
 
     reasonEl.placeholder = 'The reason and district you are touring for';
 
-    // ✅ FIX STARTS HERE
-    leaveTypeEl.removeAttribute('required');   // remove required
-    leaveTypeEl.value = '';                    // clear value
-    // ✅ FIX ENDS HERE
+    leaveTypeEl.removeAttribute('required');   
+    leaveTypeEl.value = '';                   
 
   } else {
     leaveTypeGroup.classList.remove('hidden');
@@ -165,15 +119,9 @@ function updateFormForTab() {
     districtOptional.style.color = '';
 
     reasonEl.placeholder = 'Describe your reason for leave...';
-
-    // ✅ RESTORE REQUIRED
     leaveTypeEl.setAttribute('required', 'true');
   }
 }
-
-
-
-// ─── Fetch Leaves ───────────────────────────────────────
 async function fetchLeaves() {
   try {
     const res = await fetch(`${API_BASE}/api/leaves/my`, {
@@ -194,7 +142,6 @@ async function fetchLeaves() {
   }
 }
 
-// ─── Render Leaves Table ────────────────────────────────
 function renderLeaves() {
   const tbody = document.getElementById('leavesBody');
   let filtered = allLeaves;
@@ -251,8 +198,6 @@ function renderLeaves() {
     </tr>
   `).join('');
 }
-
-// ─── Filter Tabs ────────────────────────────────────────
 document.querySelectorAll('.filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -261,8 +206,6 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     renderLeaves();
   });
 });
-
-// ─── Submit Form ────────────────────────────────────────
 document.getElementById('applicationForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const isTour = document.getElementById('appType').value === 'tour';
@@ -318,8 +261,6 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
     if (!res.ok) throw new Error(data.error || 'Failed to submit.');
 
     showToast(data.message, 'success');
-
-    // Reset form
     if (!isTour) document.getElementById('leaveType').value = '';
     document.getElementById('fromDate').value = today;
     document.getElementById('toDate').value = today;
@@ -335,8 +276,6 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
     btn.innerHTML = isTour ? 'Submit Tour Application' : 'Submit Leave Application';
   }
 });
-
-// ─── Cancel Leave Modal ─────────────────────────────────
 function openCancelModal(leaveId) {
   cancelLeaveId = leaveId;
   document.getElementById('cancelModal').classList.remove('hidden');
@@ -376,24 +315,18 @@ document.getElementById('cancelModalConfirm').addEventListener('click', async ()
   }
 });
 
-// Close modal on overlay click
 document.getElementById('cancelModal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) {
     document.getElementById('cancelModal').classList.add('hidden');
     cancelLeaveId = null;
   }
 });
-
-// ─── Logout ─────────────────────────────────────────────
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.clear();
   window.location.href = '/index.html';
 });
 
-// ─── Init ───────────────────────────────────────────────
 fetchLeaves();
-
-// ─── CSV Download ───────────────────────────────────────
 function downloadCSV(filename, csvContent) {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');

@@ -7,7 +7,6 @@
   <title>Employee Portal — UIDAI RO Lucknow Attendance Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    /* Tab styles for Leave/Tour toggle */
     .app-tabs {
       display: flex;
       gap: 0;
@@ -40,11 +39,10 @@
   </style>
 </head>
 <body>
-  <!-- Toast container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <div class="app-container">
-    <!-- Navbar -->
+  
     <nav class="navbar">
       <a href="/employee.html" class="navbar-brand">
         <div class="logo-icon">🏛️</div>
@@ -59,7 +57,7 @@
       </div>
     </nav>
 
-    <!-- Tabs: Leave / Tour -->
+   
     <section class="section">
       <div class="app-tabs">
         <button class="app-tab active" id="tabLeave" data-tab="leave">📋 Leave Application</button>
@@ -68,7 +66,7 @@
 
       <div class="card">
         <form id="applicationForm" autocomplete="off">
-          <!-- Hidden field for application type -->
+          
           <input type="hidden" id="appType" value="leave">
 
           <div class="form-row">
@@ -82,7 +80,7 @@
             </div>
           </div>
 
-          <!-- Leave Type (visible only in Leave tab) -->
+          
           <div class="form-group" id="leaveTypeGroup">
             <label for="leaveType">Leave Type</label>
             <select id="leaveType" class="form-control" required>
@@ -95,7 +93,7 @@
             </select>
           </div>
 
-          <!-- Tour type label (visible only in Tour tab) -->
+         
           <div class="form-group hidden" id="tourTypeGroup">
             <label>Application Type</label>
             <input type="text" class="form-control" value="Tour" readonly style="color: var(--accent-teal); font-weight: 600;">
@@ -112,7 +110,7 @@
             </div>
           </div>
 
-          <!-- District Dropdown -->
+          
           <div class="form-group">
             <label for="district" id="districtLabel">District <span id="districtOptional" class="text-muted">(optional)</span></label>
             <select id="district" class="form-control">
@@ -203,7 +201,7 @@
   <label for="forwardingOfficer">Forwarding Officer</label>
   <input type="text" id="forwardingOfficer" class="form-control" placeholder="Enter forwarding officer name">
 </div>
-          <!-- Approving Authority -->
+         
           <div class="form-group">
             <label for="reportingOfficer">Approving Authority</label>
             <input type="text" id="reportingOfficer" class="form-control" placeholder="Enter approving authority name">
@@ -216,14 +214,14 @@
       </div>
     </section>
 
-    <!-- My Leaves Section -->
+    
     <section class="section">
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
         <h2 class="section-title" style="margin-bottom:0">📄 My Applications</h2>
         <button class="btn btn-ghost btn-sm" id="downloadCsvBtn">📥 Download CSV</button>
       </div>
 
-      <!-- Filter tabs -->
+    
       <div class="filter-tabs">
         <button class="filter-tab active" data-filter="all">All</button>
         <button class="filter-tab" data-filter="pending">⏳ Pending</button>
@@ -270,7 +268,7 @@
     </section>
   </div>
 
-  <!-- Cancel Confirmation Modal -->
+ 
   <div class="modal-overlay hidden" id="cancelModal">
     <div class="modal">
       <h3>🚫 Cancel Application</h3>

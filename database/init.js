@@ -4,13 +4,10 @@ const path = require('path');
 
 const dbPath = path.join(__dirname, '..', 'attendance.db');
 const db = new Database(dbPath);
-
-// Enable WAL mode for better concurrency
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 function initialize() {
-  // Create employees table
   db.exec(`
     CREATE TABLE IF NOT EXISTS employees (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,8 +18,6 @@ function initialize() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
-
-  // Create leaves table
   db.exec(`
     CREATE TABLE IF NOT EXISTS leaves (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,11 +38,9 @@ function initialize() {
     )
   `);
 
-  // Migration: add columns if they don't exist (for existing databases)
   try { db.exec(`ALTER TABLE leaves ADD COLUMN district TEXT DEFAULT ''`); } catch (e) { /* column exists */ }
   try { db.exec(`ALTER TABLE leaves ADD COLUMN reporting_officer TEXT DEFAULT ''`); } catch (e) { /* column exists */ }
 
-  // Create indexes for performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_leaves_employee_id ON leaves(employee_id);
     CREATE INDEX IF NOT EXISTS idx_leaves_status ON leaves(status);
@@ -56,14 +49,13 @@ function initialize() {
     CREATE INDEX IF NOT EXISTS idx_employees_employee_id ON employees(employee_id);
   `);
 
-  // Seed HR accounts if they don't exist
   const hrAccounts = [
-    { employee_id: 'DIR001', name: 'Col (Dr.) Praveen Kumar Singh', password: 'admin@hr1' },
-    { employee_id: 'DIR002', name: 'Akash Deep', password: 'admin@hr2' },
-    { employee_id: 'DIR003', name: 'Lt Col Akshay Bahl', password: 'admin@hr3' },
-    { employee_id: 'DD001', name: 'Abhishek Verma', password: 'admin@dd1' },
-    { employee_id: 'DD002', name: 'Aditya Prakash Bajpai', password: 'admin@dd2' },
-    { employee_id: 'DD003', name: 'Vipin Verma', password: 'admin@dd3' },
+    { employee_id: 'MR001', name: 'Manager 1', password: 'xxxx' },
+    { employee_id: 'MR002', name: 'Manager 2', password: 'xxxx' },
+    { employee_id: 'MR003', name: 'Manager 3', password: 'xxxx' },
+    { employee_id: 'HR001', name: 'HR 1', password: 'xxxx' },
+    { employee_id: 'HR002', name: 'HR 2', password: 'xxxx' },
+    { employee_id: 'HR003', name: 'HR 3', password: 'xxxx' },
 
   ];
 
