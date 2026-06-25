@@ -119,9 +119,9 @@ Stores all leave applications and their current status.
 ## Running the Application
 
 1. **Install Dependencies:**
-   \`\`\`bash
+   `bash
    npm install
-   \`\`\`
+   `
 
 2. **Start the Server:**
    \`\`\`bash
