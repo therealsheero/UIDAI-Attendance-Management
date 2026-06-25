@@ -3,9 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Employee Leave Management Portal — UIDAI Attendance Dashboard">
-  <title>Employee Portal — UIDAI Attendance Dashboard</title>
+  <meta name="description" content="Employee Leave Management Portal — UIDAI RO Lucknow Attendance Dashboard">
+  <title>Employee Portal — UIDAI RO Lucknow Attendance Dashboard</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* Tab styles for Leave/Tour toggle */
+    .app-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+    }
+    .app-tab {
+      flex: 1;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid var(--bg-glass-border);
+      background: var(--bg-glass);
+      color: var(--text-secondary);
+      transition: var(--transition-base);
+      font-family: inherit;
+    }
+    .app-tab:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+    .app-tab:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+    .app-tab.active {
+      background: var(--gradient-primary);
+      color: #fff;
+      border-color: transparent;
+    }
+    .app-tab:not(.active):hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+    }
+  </style>
 </head>
 <body>
   <!-- Toast container -->
@@ -16,7 +48,7 @@
     <nav class="navbar">
       <a href="/employee.html" class="navbar-brand">
         <div class="logo-icon">🏛️</div>
-        <h1>UIDAI Attendance</h1>
+        <h1>UIDAI RO Lucknow Attendance</h1>
       </a>
       <div class="navbar-user">
         <div class="user-info">
@@ -26,10 +58,19 @@
         <button class="btn btn-ghost btn-sm" id="logoutBtn" title="Sign Out">🚪 Logout</button>
       </div>
     </nav>
+
+    <!-- Tabs: Leave / Tour -->
     <section class="section">
-      <h2 class="section-title">📋 Apply for Leave</h2>
+      <div class="app-tabs">
+        <button class="app-tab active" id="tabLeave" data-tab="leave">📋 Leave Application</button>
+        <button class="app-tab" id="tabTour" data-tab="tour">🗺️ Tour Application</button>
+      </div>
+
       <div class="card">
-        <form id="leaveForm" autocomplete="off">
+        <form id="applicationForm" autocomplete="off">
+          <!-- Hidden field for application type -->
+          <input type="hidden" id="appType" value="leave">
+
           <div class="form-row">
             <div class="form-group">
               <label for="empIdDisplay">Employee ID</label>
@@ -41,7 +82,8 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <!-- Leave Type (visible only in Leave tab) -->
+          <div class="form-group" id="leaveTypeGroup">
             <label for="leaveType">Leave Type</label>
             <select id="leaveType" class="form-control" required>
               <option value="">Select leave type</option>
@@ -51,6 +93,12 @@
               <option value="Compensatory Off">Compensatory Off</option>
               <option value="Special Leave">Special Leave</option>
             </select>
+          </div>
+
+          <!-- Tour type label (visible only in Tour tab) -->
+          <div class="form-group hidden" id="tourTypeGroup">
+            <label>Application Type</label>
+            <input type="text" class="form-control" value="Tour" readonly style="color: var(--accent-teal); font-weight: 600;">
           </div>
 
           <div class="form-row">
@@ -64,12 +112,104 @@
             </div>
           </div>
 
+          <!-- District Dropdown -->
+          <div class="form-group">
+            <label for="district" id="districtLabel">District <span id="districtOptional" class="text-muted">(optional)</span></label>
+            <select id="district" class="form-control">
+              <option value="">Select district</option>
+              <option value="Agra">Agra</option>
+              <option value="Aligarh">Aligarh</option>
+              <option value="Ambedkar Nagar">Ambedkar Nagar</option>
+              <option value="Amethi">Amethi</option>
+              <option value="Amroha">Amroha</option>
+              <option value="Auraiya">Auraiya</option>
+              <option value="Ayodhya">Ayodhya</option>
+              <option value="Azamgarh">Azamgarh</option>
+              <option value="Baghpat">Baghpat</option>
+              <option value="Bahraich">Bahraich</option>
+              <option value="Ballia">Ballia</option>
+              <option value="Balrampur">Balrampur</option>
+              <option value="Banda">Banda</option>
+              <option value="Barabanki">Barabanki</option>
+              <option value="Bareilly">Bareilly</option>
+              <option value="Basti">Basti</option>
+              <option value="Bhadohi">Bhadohi</option>
+              <option value="Bijnor">Bijnor</option>
+              <option value="Budaun">Budaun</option>
+              <option value="Bulandshahr">Bulandshahr</option>
+              <option value="Chandauli">Chandauli</option>
+              <option value="Chitrakoot">Chitrakoot</option>
+              <option value="Deoria">Deoria</option>
+              <option value="Etah">Etah</option>
+              <option value="Etawah">Etawah</option>
+              <option value="Farrukhabad">Farrukhabad</option>
+              <option value="Fatehpur">Fatehpur</option>
+              <option value="Firozabad">Firozabad</option>
+              <option value="Gautam Buddha Nagar">Gautam Buddha Nagar</option>
+              <option value="Ghaziabad">Ghaziabad</option>
+              <option value="Ghazipur">Ghazipur</option>
+              <option value="Gonda">Gonda</option>
+              <option value="Gorakhpur">Gorakhpur</option>
+              <option value="Hamirpur">Hamirpur</option>
+              <option value="Hapur">Hapur</option>
+              <option value="Hardoi">Hardoi</option>
+              <option value="Hathras">Hathras</option>
+              <option value="Jalaun">Jalaun</option>
+              <option value="Jaunpur">Jaunpur</option>
+              <option value="Jhansi">Jhansi</option>
+              <option value="Kannauj">Kannauj</option>
+              <option value="Kanpur Dehat">Kanpur Dehat</option>
+              <option value="Kanpur Nagar">Kanpur Nagar</option>
+              <option value="Kasganj">Kasganj</option>
+              <option value="Kaushambi">Kaushambi</option>
+              <option value="Kushinagar">Kushinagar</option>
+              <option value="Lakhimpur Kheri">Lakhimpur Kheri</option>
+              <option value="Lalitpur">Lalitpur</option>
+              <option value="Lucknow">Lucknow</option>
+              <option value="Maharajganj">Maharajganj</option>
+              <option value="Mahoba">Mahoba</option>
+              <option value="Mainpuri">Mainpuri</option>
+              <option value="Mathura">Mathura</option>
+              <option value="Mau">Mau</option>
+              <option value="Meerut">Meerut</option>
+              <option value="Mirzapur">Mirzapur</option>
+              <option value="Moradabad">Moradabad</option>
+              <option value="Muzaffarnagar">Muzaffarnagar</option>
+              <option value="Pilibhit">Pilibhit</option>
+              <option value="Pratapgarh">Pratapgarh</option>
+              <option value="Prayagraj">Prayagraj</option>
+              <option value="Raebareli">Raebareli</option>
+              <option value="Rampur">Rampur</option>
+              <option value="Saharanpur">Saharanpur</option>
+              <option value="Sambhal">Sambhal</option>
+              <option value="Sant Kabir Nagar">Sant Kabir Nagar</option>
+              <option value="Shahjahanpur">Shahjahanpur</option>
+              <option value="Shamli">Shamli</option>
+              <option value="Shravasti">Shravasti</option>
+              <option value="Siddharthnagar">Siddharthnagar</option>
+              <option value="Sitapur">Sitapur</option>
+              <option value="Sonbhadra">Sonbhadra</option>
+              <option value="Sultanpur">Sultanpur</option>
+              <option value="Unnao">Unnao</option>
+              <option value="Varanasi">Varanasi</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label for="reason">Reason</label>
             <textarea id="reason" class="form-control" placeholder="Describe your reason for leave..." required></textarea>
           </div>
+          <div class="form-group hidden" id="forwardingOfficerGroup">
+  <label for="forwardingOfficer">Forwarding Officer</label>
+  <input type="text" id="forwardingOfficer" class="form-control" placeholder="Enter forwarding officer name">
+</div>
+          <!-- Approving Authority -->
+          <div class="form-group">
+            <label for="reportingOfficer">Approving Authority</label>
+            <input type="text" id="reportingOfficer" class="form-control" placeholder="Enter approving authority name">
+          </div>
 
-          <button type="submit" class="btn btn-primary" id="submitLeaveBtn">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
             Submit Leave Application
           </button>
         </form>
@@ -78,7 +218,10 @@
 
     <!-- My Leaves Section -->
     <section class="section">
-      <h2 class="section-title">📄 My Leave Applications</h2>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+        <h2 class="section-title" style="margin-bottom:0">📄 My Applications</h2>
+        <button class="btn btn-ghost btn-sm" id="downloadCsvBtn">📥 Download CSV</button>
+      </div>
 
       <!-- Filter tabs -->
       <div class="filter-tabs">
@@ -95,10 +238,14 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>Leave Type</th>
+                <th>Type</th>
                 <th>From</th>
                 <th>To</th>
+                <th>District</th>
                 <th>Reason</th>
+                <th>Forwarding Officer</th>
+                <th>Approving Authority</th>
+                <th>Stage</th>
                 <th>Status</th>
                 <th>Applied On</th>
                 <th>Action By</th>
@@ -108,11 +255,11 @@
             </thead>
             <tbody id="leavesBody">
               <tr>
-                <td colspan="10">
+                <td colspan="12">
                   <div class="empty-state">
                     <div class="empty-icon">📭</div>
-                    <h4>No leave applications yet</h4>
-                    <p>Apply for a leave above to get started</p>
+                    <h4>No applications yet</h4>
+                    <p>Apply for a leave or tour above to get started</p>
                   </div>
                 </td>
               </tr>
@@ -126,11 +273,11 @@
   <!-- Cancel Confirmation Modal -->
   <div class="modal-overlay hidden" id="cancelModal">
     <div class="modal">
-      <h3>🚫 Cancel Leave</h3>
-      <p>Are you sure you want to cancel this leave application? This action cannot be undone.</p>
+      <h3>🚫 Cancel Application</h3>
+      <p>Are you sure you want to cancel this application? This action cannot be undone.</p>
       <div class="modal-actions">
-        <button class="btn btn-ghost btn-sm" id="cancelModalClose">Keep the application</button>
-        <button class="btn btn-danger btn-sm" id="cancelModalConfirm">Yes, Cancel Leave</button>
+        <button class="btn btn-ghost btn-sm" id="cancelModalClose">Keep it</button>
+        <button class="btn btn-danger btn-sm" id="cancelModalConfirm">Yes, Cancel</button>
       </div>
     </div>
   </div>

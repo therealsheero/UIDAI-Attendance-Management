@@ -32,6 +32,8 @@ function initialize() {
       from_date DATE NOT NULL,
       to_date DATE NOT NULL,
       reason TEXT NOT NULL,
+      district TEXT DEFAULT '',
+      reporting_officer TEXT DEFAULT '',
       status TEXT NOT NULL DEFAULT 'pending',
       applied_on DATETIME DEFAULT CURRENT_TIMESTAMP,
       action_by TEXT,
@@ -40,6 +42,10 @@ function initialize() {
       FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
     )
   `);
+
+  // Migration: add columns if they don't exist (for existing databases)
+  try { db.exec(`ALTER TABLE leaves ADD COLUMN district TEXT DEFAULT ''`); } catch (e) { /* column exists */ }
+  try { db.exec(`ALTER TABLE leaves ADD COLUMN reporting_officer TEXT DEFAULT ''`); } catch (e) { /* column exists */ }
 
   // Create indexes for performance
   db.exec(`
@@ -55,6 +61,10 @@ function initialize() {
     { employee_id: 'DIR001', name: 'Col (Dr.) Praveen Kumar Singh', password: 'admin@hr1' },
     { employee_id: 'DIR002', name: 'Akash Deep', password: 'admin@hr2' },
     { employee_id: 'DIR003', name: 'Lt Col Akshay Bahl', password: 'admin@hr3' },
+    { employee_id: 'DD001', name: 'Abhishek Verma', password: 'admin@dd1' },
+    { employee_id: 'DD002', name: 'Aditya Prakash Bajpai', password: 'admin@dd2' },
+    { employee_id: 'DD003', name: 'Vipin Verma', password: 'admin@dd3' },
+
   ];
 
   const insertHR = db.prepare(`

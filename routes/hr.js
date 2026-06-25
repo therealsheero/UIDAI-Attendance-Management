@@ -5,18 +5,101 @@ const { authenticate, requireRole } = require('../middleware/auth');
 const router = express.Router();
 
 // All HR routes require authentication + HR role
-router.use(authenticate, requireRole('hr'));
+router.use(authenticate);
 
 /**
  * GET /api/hr/leaves
  * Get all leave applications with optional status filter
  * Query params: ?status=pending|approved|rejected|cancelled
  */
+// router.get('/leaves', (req, res) => {
+//   const officer = req.user.officer?.toLowerCase();
+
+// if (!['dd', 'dir', 'ddg'].includes(officer)) {
+//   return res.status(403).json({ error: 'Access denied' });
+// }if (officer === 'ddg') {
+//   leaves = db.prepare(`
+//     SELECT * FROM leaves
+//     WHERE leave_type = 'Tour' AND current_stage = 'ddg'
+//     ORDER BY applied_on DESC
+//   `).all();
+// }
+//   try {
+//     const { status } = req.query;
+
+//     let leaves;
+//     if (status) {
+//       leaves = db.prepare(`
+//         SELECT * FROM leaves WHERE status = ? ORDER BY applied_on DESC
+//       `).all(status);
+//     } else {
+//       leaves = db.prepare(`
+//         SELECT * FROM leaves ORDER BY applied_on DESC
+//       `).all();
+//     }
+
+//     res.json({ leaves });
+//   } catch (err) {
+//     console.error('HR fetch leaves error:', err);
+//     res.status(500).json({ error: 'Internal server error.' });
+//   }
+// });
+router.get('/leaves/range', (req, res) => {
+  try {
+    const { from, to } = req.query;
+
+    if (!from || !to) {
+      return res.status(400).json({
+        error: 'from and to dates are required'
+      });
+    }
+
+    const leaves = db.prepare(`
+      SELECT *
+      FROM leaves
+      WHERE from_date <= ?
+      AND to_date >= ?
+      ORDER BY employee_name ASC
+    `).all(to, from);
+
+    res.json({
+      from,
+      to,
+      count: leaves.length,
+      leaves
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
 router.get('/leaves', (req, res) => {
   try {
-    const { status } = req.query;
+    const officer = req.user.officer?.toLowerCase();
 
+    if (!['dd', 'dir', 'ddg'].includes(officer)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { status } = req.query;
     let leaves;
+
+    // ✅ DDG LOGIC
+    if (officer === 'ddg') {
+      leaves = db.prepare(`
+        SELECT * FROM leaves
+        WHERE leave_type = 'Tour' AND current_stage = 'ddg'
+        ORDER BY applied_on DESC  
+      `).all();
+
+      return res.json({ leaves });
+    }
+
+    // ✅ DD / DIR LOGIC (normal HR)
     if (status) {
       leaves = db.prepare(`
         SELECT * FROM leaves WHERE status = ? ORDER BY applied_on DESC
@@ -28,18 +111,35 @@ router.get('/leaves', (req, res) => {
     }
 
     res.json({ leaves });
+
   } catch (err) {
     console.error('HR fetch leaves error:', err);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
+router.patch('/forward/:id', (req, res) => {
+  try {
+    const { id } = req.params;
 
-/**
- * GET /api/hr/leaves/date/:date
- * Get all leaves that overlap with a specific date (approved + pending)
- * Date format: YYYY-MM-DD
- */
+    db.prepare(`
+      UPDATE leaves
+      SET current_stage = 'ddg'
+      WHERE id = ?
+    `).run(id);
+
+    res.json({ message: 'Forwarded to DDG successfully' });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Error forwarding' });
+  }
+});
+
 router.get('/leaves/date/:date', (req, res) => {
+  const officer = req.user.officer?.toLowerCase();
+
+    if (!['dd', 'dir', 'ddg'].includes(officer)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
   try {
     const { date } = req.params;
 
@@ -68,6 +168,11 @@ router.get('/leaves/date/:date', (req, res) => {
  * Body: { action: "approved" | "rejected" }
  */
 router.patch('/leaves/:id', (req, res) => {
+  const officer = req.user.officer?.toLowerCase();
+
+    if (!['dd', 'dir', 'ddg'].includes(officer)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
   try {
     const { id } = req.params;
     const { action } = req.body;
@@ -105,6 +210,11 @@ router.patch('/leaves/:id', (req, res) => {
  * Get leave statistics: count of people on leave per date (next 30 days)
  */
 router.get('/stats', (req, res) => {
+  const officer = req.user.officer?.toLowerCase();
+
+    if (!['dd', 'dir', 'ddg'].includes(officer)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
   try {
     // Get count of approved leaves per date for the next 30 days
     const stats = db.prepare(`

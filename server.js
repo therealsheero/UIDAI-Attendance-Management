@@ -43,10 +43,4 @@ initialize();
 
 app.listen(PORT, () => {
   console.log(`\n🚀 Attendance Dashboard running at http://localhost:${PORT}\n`);
-  console.log('   HR Credentials:');
-  console.log('   ─────────────────────────────');
-  console.log('   HR001 → password: admin@hr1');
-  console.log('   HR002 → password: admin@hr2');
-  console.log('   HR003 → password: admin@hr3');
-  console.log('   ─────────────────────────────\n');
 });

@@ -13,7 +13,7 @@ router.use(authenticate);
  */
 router.post('/', (req, res) => {
   try {
-    const { leave_type, from_date, to_date, reason } = req.body;
+    const { leave_type, from_date, to_date, reason, district, reporting_officer,forwarding_officer } = req.body;
     const { employee_id, name } = req.user;
 
     // Validation
@@ -21,22 +21,57 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'All fields are required: leave_type, from_date, to_date, reason' });
     }
 
-    const validTypes = ['Casual Leave', 'Sick Leave', 'Earned Leave', 'Compensatory Off', 'Special Leave'];
+    const validTypes = ['Tour', 'Casual Leave', 'Sick Leave', 'Earned Leave', 'Compensatory Off', 'Special Leave'];
     if (!validTypes.includes(leave_type)) {
       return res.status(400).json({ error: `Invalid leave type. Must be one of: ${validTypes.join(', ')}` });
+    }
+
+    // Tour requires district
+    if (leave_type === 'Tour' && !district) {
+      return res.status(400).json({ error: 'District is required for Tour applications.' });
     }
 
     if (new Date(from_date) > new Date(to_date)) {
       return res.status(400).json({ error: '"From date" cannot be after "To date".' });
     }
 
+    // const result = db.prepare(`
+    //   INSERT INTO leaves (employee_id, employee_name, leave_type, from_date, to_date, reason, district, reporting_officer, forwarding_officer,current_stage,status, applied_on)
+    //   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
+    // `).run(employee_id, name, leave_type, from_date, to_date, reason.trim(), (district || '').trim(), (reporting_officer || '').trim(), (forwardingOfficer || '').trim());
     const result = db.prepare(`
-      INSERT INTO leaves (employee_id, employee_name, leave_type, from_date, to_date, reason, status, applied_on)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))
-    `).run(employee_id, name, leave_type, from_date, to_date, reason.trim());
+  INSERT INTO leaves (
+    employee_id,
+    employee_name,
+    leave_type,
+    from_date,
+    to_date,
+    reason,
+    district,
+    reporting_officer,
+    forwarding_officer,
+    current_stage,
+    status,
+    applied_on
+  )
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+`).run(
+  employee_id,
+  name,
+  leave_type,
+  from_date,
+  to_date,
+  reason.trim(),
+  (district || '').trim(),
+  (reporting_officer || '').trim(),
+  (forwarding_officer || '').trim(),   // ✅ FIXED
+  leave_type === 'Tour' ? 'dd' : 'dir',                          // ✅ ADD THIS
+  'pending'                            // ✅ ADD THIS
+);
 
+    const typeLabel = leave_type === 'Tour' ? 'Tour' : 'Leave';
     res.status(201).json({
-      message: 'Leave application submitted successfully!',
+      message: `${typeLabel} application submitted successfully!`,
       leave_id: result.lastInsertRowid,
     });
   } catch (err) {

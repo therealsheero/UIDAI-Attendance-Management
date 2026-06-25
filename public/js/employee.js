@@ -1,16 +1,17 @@
 /* ══════════════════════════════════════════════════════════
-   Employee Portal JS — Leave Management
+   Employee Portal JS — Leave & Tour Management
    ══════════════════════════════════════════════════════════ */
 
 const API_BASE = '';
 let allLeaves = [];
 let currentFilter = 'all';
 let cancelLeaveId = null;
+let currentTab = 'leave'; // 'leave' or 'tour'
 
 // ─── Auth Check ──────────────────────────────────────────
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || 'null');
-
+// const forwardingOfficer = document.getElementById('forwardingOfficer').value.trim();
 if (!token || !user || user.role !== 'employee') {
   window.location.href = '/index.html';
 }
@@ -81,6 +82,97 @@ document.getElementById('fromDate').addEventListener('change', function () {
   toDate.min = this.value;
 });
 
+// ─── Tab Switching ──────────────────────────────────────
+document.querySelectorAll('.app-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentTab = tab.dataset.tab;
+    updateFormForTab();
+  });
+});
+
+// function updateFormForTab() {
+//   const leaveTypeGroup = document.getElementById('leaveTypeGroup');
+//   const tourTypeGroup = document.getElementById('tourTypeGroup');
+//   const appTypeInput = document.getElementById('appType');
+//   const submitBtn = document.getElementById('submitBtn');
+//   const districtEl = document.getElementById('district');
+//   const districtOptional = document.getElementById('districtOptional');
+//   const reasonEl = document.getElementById('reason');
+
+//   if (currentTab === 'tour') {
+//     leaveTypeGroup.classList.add('hidden');
+//     tourTypeGroup.classList.remove('hidden');
+//     appTypeInput.value = 'tour';
+//     submitBtn.textContent = 'Submit Tour Application';
+//     districtEl.required = true;
+//     districtOptional.textContent = '(required)';
+//     districtOptional.style.color = 'var(--danger)';
+//     reasonEl.placeholder = 'The reason and district you are touring for';
+//   } else {
+//     leaveTypeGroup.classList.remove('hidden');
+//     tourTypeGroup.classList.add('hidden');
+//     appTypeInput.value = 'leave';
+//     submitBtn.textContent = 'Submit Leave Application';
+//     districtEl.required = false;
+//     districtOptional.textContent = '(optional)';
+//     districtOptional.style.color = '';
+//     reasonEl.placeholder = 'Describe your reason for leave...';
+//   }
+// }
+
+function updateFormForTab() {
+  const leaveTypeGroup = document.getElementById('leaveTypeGroup');
+  const tourTypeGroup = document.getElementById('tourTypeGroup');
+  const appTypeInput = document.getElementById('appType');
+  const submitBtn = document.getElementById('submitBtn');
+  const districtEl = document.getElementById('district');
+  const districtOptional = document.getElementById('districtOptional');
+  const reasonEl = document.getElementById('reason');
+  const leaveTypeEl = document.getElementById('leaveType'); // ✅ ADD THIS
+  const forwardingGroup = document.getElementById('forwardingOfficerGroup');
+
+  if (currentTab === 'tour') {
+    leaveTypeGroup.classList.add('hidden');
+    tourTypeGroup.classList.remove('hidden');
+    forwardingGroup.classList.remove('hidden');
+
+    appTypeInput.value = 'tour';
+    submitBtn.textContent = 'Submit Tour Application';
+
+    districtEl.required = true;
+    districtOptional.textContent = '(required)';
+    districtOptional.style.color = 'var(--danger)';
+
+    reasonEl.placeholder = 'The reason and district you are touring for';
+
+    // ✅ FIX STARTS HERE
+    leaveTypeEl.removeAttribute('required');   // remove required
+    leaveTypeEl.value = '';                    // clear value
+    // ✅ FIX ENDS HERE
+
+  } else {
+    leaveTypeGroup.classList.remove('hidden');
+    tourTypeGroup.classList.add('hidden');
+    forwardingGroup.classList.add('hidden');
+
+    appTypeInput.value = 'leave';
+    submitBtn.textContent = 'Submit Leave Application';
+
+    districtEl.required = false;
+    districtOptional.textContent = '(optional)';
+    districtOptional.style.color = '';
+
+    reasonEl.placeholder = 'Describe your reason for leave...';
+
+    // ✅ RESTORE REQUIRED
+    leaveTypeEl.setAttribute('required', 'true');
+  }
+}
+
+
+
 // ─── Fetch Leaves ───────────────────────────────────────
 async function fetchLeaves() {
   try {
@@ -98,7 +190,7 @@ async function fetchLeaves() {
     allLeaves = data.leaves || [];
     renderLeaves();
   } catch (err) {
-    showToast('Failed to load leaves.', 'error');
+    showToast('Failed to load applications.', 'error');
   }
 }
 
@@ -114,11 +206,11 @@ function renderLeaves() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="10">
+        <td colspan="12">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
-            <h4>No ${currentFilter === 'all' ? '' : currentFilter} leave applications</h4>
-            <p>${currentFilter === 'all' ? 'Apply for a leave above to get started' : 'No leaves with this status'}</p>
+            <h4>No ${currentFilter === 'all' ? '' : currentFilter} applications</h4>
+            <p>${currentFilter === 'all' ? 'Apply for a leave or tour above to get started' : 'No applications with this status'}</p>
           </div>
         </td>
       </tr>
@@ -132,7 +224,20 @@ function renderLeaves() {
       <td><span class="leave-type-tag">${leave.leave_type}</span></td>
       <td>${formatDate(leave.from_date)}</td>
       <td>${formatDate(leave.to_date)}</td>
-      <td title="${leave.reason}">${leave.reason.length > 30 ? leave.reason.substring(0, 30) + '…' : leave.reason}</td>
+      <td>${leave.district || '—'}</td>
+      <td title="${leave.reason}">${leave.reason.length > 25 ? leave.reason.substring(0, 25) + '…' : leave.reason}</td>
+      <td>
+  ${leave.leave_type === 'Tour' ? (leave.forwarding_officer || '—') : '—'}
+</td>
+<td>${leave.reporting_officer || '—'}</td>
+<td>
+  ${
+    leave.current_stage === 'dir' ? 'Dir' :
+    leave.current_stage === 'dd' ? 'DD' :
+    leave.current_stage === 'ddg' ? 'DDG' :
+    leave.current_stage || '—'
+  }
+</td>
       <td>${getStatusBadge(leave.status)}</td>
       <td><span class="date-display">${formatDateTime(leave.applied_on)}</span></td>
       <td>${leave.action_by_name || '—'}<br><span class="date-display">${leave.action_by || ''}</span></td>
@@ -157,18 +262,31 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   });
 });
 
-// ─── Submit Leave Form ──────────────────────────────────
-document.getElementById('leaveForm').addEventListener('submit', async (e) => {
+// ─── Submit Form ────────────────────────────────────────
+document.getElementById('applicationForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-
-  const leaveType = document.getElementById('leaveType').value;
+  const isTour = document.getElementById('appType').value === 'tour';
+  const leaveType = isTour ? 'Tour' : document.getElementById('leaveType').value;
   const fromDate = document.getElementById('fromDate').value;
   const toDate = document.getElementById('toDate').value;
   const reason = document.getElementById('reason').value.trim();
-  const btn = document.getElementById('submitLeaveBtn');
+  const district = document.getElementById('district').value;
+  const reportingOfficer = document.getElementById('reportingOfficer').value.trim();
+  const forwardingOfficer = document.getElementById('forwardingOfficer').value.trim();
+  const btn = document.getElementById('submitBtn');
 
-  if (!leaveType || !fromDate || !toDate || !reason) {
-    showToast('Please fill in all fields.', 'error');
+  if (!isTour && !leaveType) {
+    showToast('Please select a leave type.', 'error');
+    return;
+  }
+
+  if (!fromDate || !toDate || !reason) {
+    showToast('Please fill in all required fields.', 'error');
+    return;
+  }
+
+  if (isTour && !district) {
+    showToast('District is required for Tour applications.', 'error');
     return;
   }
 
@@ -189,27 +307,32 @@ document.getElementById('leaveForm').addEventListener('submit', async (e) => {
         from_date: fromDate,
         to_date: toDate,
         reason,
+        district,
+        reporting_officer: reportingOfficer,
+        forwarding_officer: isTour ? forwardingOfficer : ''
       }),
     });
 
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.error || 'Failed to apply.');
+    if (!res.ok) throw new Error(data.error || 'Failed to submit.');
 
     showToast(data.message, 'success');
 
     // Reset form
-    document.getElementById('leaveType').value = '';
+    if (!isTour) document.getElementById('leaveType').value = '';
     document.getElementById('fromDate').value = today;
     document.getElementById('toDate').value = today;
     document.getElementById('reason').value = '';
+    document.getElementById('district').value = '';
+    document.getElementById('reportingOfficer').value = '';
 
     await fetchLeaves();
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Submit Leave Application';
+    btn.innerHTML = isTour ? 'Submit Tour Application' : 'Submit Leave Application';
   }
 });
 
@@ -249,7 +372,7 @@ document.getElementById('cancelModalConfirm').addEventListener('click', async ()
     showToast(err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Yes, Cancel Leave';
+    btn.innerHTML = 'Yes, Cancel';
   }
 });
 
@@ -269,3 +392,56 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 
 // ─── Init ───────────────────────────────────────────────
 fetchLeaves();
+
+// ─── CSV Download ───────────────────────────────────────
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function escapeCSV(val) {
+  if (val == null) return '';
+  const str = String(val);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+document.getElementById('downloadCsvBtn').addEventListener('click', () => {
+  let dataToExport = allLeaves;
+
+  if (currentFilter !== 'all') {
+    dataToExport = allLeaves.filter(l => l.status === currentFilter);
+  }
+
+  if (dataToExport.length === 0) {
+    showToast('No data to export.', 'error');
+    return;
+  }
+
+  const headers = ['#', 'Type', 'From', 'To', 'District', 'Reason', 'Reporting Officer', 'Status', 'Applied On', 'Action By', 'Action By Name', 'Action On'];
+  const rows = dataToExport.map((l, i) => [
+    i + 1,
+    l.leave_type,
+    l.from_date,
+    l.to_date,
+    l.district || '',
+    l.reason,
+    l.reporting_officer || '',
+    l.status,
+    l.applied_on,
+    l.action_by || '',
+    l.action_by_name || '',
+    l.action_on || '',
+  ].map(escapeCSV).join(','));
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const filterLabel = currentFilter === 'all' ? 'all' : currentFilter;
+  downloadCSV(`my_applications_${filterLabel}_${user.employee_id}.csv`, csv);
+  showToast('CSV downloaded!', 'success');
+});

@@ -80,20 +80,33 @@ router.post('/login', (req, res) => {
         employee_id: user.employee_id,
         name: user.name,
         role: user.role,
+        officer: user.officer,
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
+    // const token_id = bcrypt.hashSync(user.employee_id + Date.now(), 10); // Unique token ID
+    // db.prepare('INSERT INTO tokens (token_id, employee_id) VALUES (?, ?)').run(token_id, user.employee_id);
 
+    // res.json({
+    //   message: 'Login successful!',
+    //   token,
+    //   user: {
+    //     employee_id: user.employee_id,
+    //     name: user.name,
+    //     role: user.role,
+    //   },
+    // });
     res.json({
-      message: 'Login successful!',
-      token,
-      user: {
-        employee_id: user.employee_id,
-        name: user.name,
-        role: user.role,
-      },
-    });
+  message: 'Login successful!',
+  token,
+  user: {
+    employee_id: user.employee_id,
+    name: user.name,
+    role: user.role,
+    officer: user.officer   // 🔥 ADD THIS
+  },
+});
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Internal server error.' });
